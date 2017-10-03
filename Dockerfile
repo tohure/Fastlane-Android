@@ -1,5 +1,19 @@
 FROM ubuntu
 
+#Arguments for User ID & Group
+ARG USER
+ARG USER_ID
+ARG GROUP_ID
+
+# add user with specified (or default) user/group ids
+ENV USER ${USER:-guest}
+ENV USER_ID ${USER_ID:-1000}
+ENV GROUP_ID ${GROUP_ID:-1000}
+
+#Add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
+RUN groupadd -g ${GROUP_ID} ${USER} && \
+   useradd -u ${USER_ID} -g ${USER} -s /bin/bash -m -d /${USER} ${USER}
+
 #Config Locale
 RUN apt-get update && apt-get install -y locales && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
@@ -98,6 +112,9 @@ RUN cd ${LIBRARY_HOME_BETA}android-sdk-linux  \
 
 #Change de Name Path for Linux
 RUN mv ${LIBRARY_HOME_BETA}android-sdk-linux/ ${LIBRARY_HOME_BETA}sdk
+
+# Switch to $USER
+USER $USER
 
 #Set work Folder
 ENV MAIN_FOLDER=/usr/local/share
